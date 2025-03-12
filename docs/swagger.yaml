@@ -1,0 +1,73 @@
+definitions:
+  urls.AliasRequest:
+    description: Alias data for creation
+    properties:
+      alias:
+        type: string
+      url:
+        type: string
+    required:
+    - url
+    type: object
+  urls.AliasResponse:
+    description: Response data for alias creation
+    properties:
+      alias:
+        type: string
+      error:
+        type: string
+      status:
+        enum:
+        - ok
+        - error
+        type: string
+    required:
+    - status
+    type: object
+info:
+  contact: {}
+  license:
+    name: Apache 2.0
+  title: Seelochka swagger
+  version: "1.0"
+paths:
+  /:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: reqbody
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/urls.AliasRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/urls.AliasResponse'
+        "400":
+          description: Bad Request
+      summary: Create an alias
+  /{alias}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Alias
+        in: path
+        name: alias
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "301":
+          description: Moved Permanently
+        "404":
+          description: Not Found
+      summary: Redirect by an alias
+swagger: "2.0"
