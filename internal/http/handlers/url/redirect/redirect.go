@@ -1,12 +1,12 @@
-package urls
+package redirect
 
 import (
 	"errors"
 	"log/slog"
 	"net/http"
-	storage "seelochka/internal/storages"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/zzvanq/seelochka/internal/storage"
 )
 
 type URLGetter interface {
@@ -20,7 +20,7 @@ type URLGetter interface {
 // @Success	301
 // @Failure	404
 // @Router		/{alias} [get]
-func NewURLRedirect(log *slog.Logger, urlGetter URLGetter) http.HandlerFunc {
+func New(log *slog.Logger, urlGetter URLGetter) http.HandlerFunc {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		log = log.With(slog.String("handler", "urlRedirect"))
 

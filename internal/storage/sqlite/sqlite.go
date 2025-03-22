@@ -4,13 +4,17 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	storage "seelochka/internal/storages"
 
 	"github.com/mattn/go-sqlite3"
+	"github.com/zzvanq/seelochka/internal/storage"
 )
 
 type Storage struct {
 	db *sql.DB
+}
+
+func (s *Storage) Close() error {
+	return s.db.Close()
 }
 
 func New(storagePath string) (*Storage, error) {

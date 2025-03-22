@@ -1,0 +1,13 @@
+with-expecter: true
+filename: "mock_{{.InterfaceName}}.go"
+dir: "{{.InterfaceDir}}"
+mockname: "Mock{{.InterfaceName}}"
+outpkg: "{{.PackageName}}"
+inpackage: True
+packages:
+    github.com/zzvanq/seelochka/internal/http/handlers/url/redirect:
+        interfaces:
+            URLGetter:
+    github.com/zzvanq/seelochka/internal/http/handlers/url/save:
+        interfaces:
+            URLSaver:

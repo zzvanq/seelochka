@@ -1,4 +1,4 @@
-package mwReqdata
+package reqdata
 
 import (
 	"log/slog"
