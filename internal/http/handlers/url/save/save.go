@@ -17,7 +17,7 @@ import (
 // @Description	Alias data for creation
 type AliasRequest struct {
 	URL   string `json:"url" validate:"required,url"`
-	Alias string `json:"alias,omitempty"`
+	Alias string `json:"alias,omitempty" validate:"min=5,max=16"`
 }
 
 // @Description	Response data for alias creation
@@ -31,10 +31,10 @@ type URLSaver interface {
 }
 
 // @Summary	Create an alias
-// @Accept		json
+// @Accept	json
 // @Produce	json
-// @Param		request	body		urls.AliasRequest	true	"reqbody"
-// @Success	200		{object}	urls.AliasResponse
+// @Param		request	body		save.AliasRequest	true	"Alias"
+// @Success	200		{object}	save.AliasResponse
 // @Failure	400
 // @Router		/ [post]
 func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
@@ -56,7 +56,7 @@ func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 			log.Error("invalid urlsave request", slog.String("error", validErr.Error()))
 
 			validationText := fmt.Sprintf(
-				"field '%s' is '%s'", validErr.Field(), validErr.ActualTag())
+				"field '%s' wrong '%s%s'", validErr.Field(), validErr.ActualTag(), validErr.Param())
 
 			w.WriteHeader(http.StatusBadRequest)
 			respEnc.Encode(AliasResponse{Error: validationText})

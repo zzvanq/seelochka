@@ -1,28 +1,23 @@
 definitions:
-  urls.AliasRequest:
+  save.AliasRequest:
     description: Alias data for creation
     properties:
       alias:
+        maxLength: 16
+        minLength: 5
         type: string
       url:
         type: string
     required:
     - url
     type: object
-  urls.AliasResponse:
+  save.AliasResponse:
     description: Response data for alias creation
     properties:
       alias:
         type: string
       error:
         type: string
-      status:
-        enum:
-        - ok
-        - error
-        type: string
-    required:
-    - status
     type: object
 info:
   contact: {}
@@ -36,19 +31,19 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: reqbody
+      - description: Alias
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/urls.AliasRequest'
+          $ref: '#/definitions/save.AliasRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/urls.AliasResponse'
+            $ref: '#/definitions/save.AliasResponse'
         "400":
           description: Bad Request
       summary: Create an alias

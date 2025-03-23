@@ -18,12 +18,27 @@ func New(log *slog.Logger) func(http.Handler) http.Handler {
 				slog.String("request_id", middleware.GetReqID(r.Context())),
 			)
 
+			rw := &responseWriter{ResponseWriter: w}
+
 			t1 := time.Now()
 			defer func() {
-				log.Info("request was closed", slog.String("duration", time.Since(t1).String()))
+				log.Info("http request",
+					slog.String("duration", time.Since(t1).String()),
+					slog.Int("status_code", rw.statusCode),
+				)
 			}()
-			next.ServeHTTP(w, r)
+			next.ServeHTTP(rw, r)
 		},
 		)
 	}
+}
+
+type responseWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func (w *responseWriter) WriteHeader(code int) {
+	w.statusCode = code
+	w.ResponseWriter.WriteHeader(code)
 }

@@ -3,7 +3,7 @@ CONFIG_PATH = configs/conf.yaml
 BINARY_NAME = main.out
 DB_PATH = db/sqlite.db
 MIGRATIONS_PATH = ./db/migrations/
-SWAGGER_DIRS = cmd/seelochka/,internal/http/handlers/urls/
+SWAGGER_DIRS = cmd/seelochka/,internal/http/handlers/url/save/,internal/http/handlers/url/redirect/
 
 build:
 	CONFIG_PATH=${CONFIG_PATH} go build -o ${BINARY_NAME} ${MAIN_PATH}

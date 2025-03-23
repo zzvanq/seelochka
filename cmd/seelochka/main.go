@@ -8,8 +8,11 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
-	"github.com/zzvanq/seelochka/internal/configs"
+	"github.com/getsentry/sentry-go"
+	sentryhttp "github.com/getsentry/sentry-go/http"
+	"github.com/zzvanq/seelochka/internal/config"
 	"github.com/zzvanq/seelochka/internal/http/handlers/url/redirect"
 	"github.com/zzvanq/seelochka/internal/http/handlers/url/save"
 	"github.com/zzvanq/seelochka/internal/http/middlewares/reqdata"
@@ -25,14 +28,16 @@ import (
 
 //	@title		Seelochka swagger
 //	@version	1.0
-//
+
 // @license.name	Apache 2.0
+
 func main() {
-	cfg := configs.MustLoad()
+	cfg := config.MustLoad()
 
 	stlog := setupLogger(cfg.Env)
 	stlog.Info("logger has been initialized")
 
+	// Storage
 	strg, err := sqlite.New(cfg.DbPath)
 	if err != nil {
 		stlog.Error("failed to initialize a storage", slog.Any("error", err))
@@ -40,6 +45,7 @@ func main() {
 	}
 	stlog.Info("storage is initialized")
 
+	// Close the storage
 	defer func() {
 		if err := strg.Close(); err != nil {
 			stlog.Error("failed to close the storage", slog.Any("error", err))
@@ -49,24 +55,39 @@ func main() {
 		stlog.Info("storage is closed")
 	}()
 
-	r := chi.NewRouter()
-	r.Use(middleware.RequestID)
-	r.Use(reqdata.New(stlog))
+	// Sentry
+	sentrymw, err := setupSentry(cfg)
+	if err != nil {
+		stlog.Error("failed to setup sentry", slog.Any("error", err))
+		return
+	}
+	defer sentry.Flush(time.Second)
 
-	r.Post("/", save.New(stlog, strg))
-	r.Get("/{alias}", redirect.New(stlog, strg))
+	// Router
+	r := chi.NewRouter()
+	r.Use(reqdata.New(stlog))
+	r.Use(middleware.Recoverer)
+	r.Use(sentrymw.Handle)
+	r.Use(middleware.RequestID)
+
+	r.Group(func(r chi.Router) {
+		r.Post("/", save.New(stlog, strg))
+		r.Get("/{alias}", redirect.New(stlog, strg))
+	})
 
 	r.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL(fmt.Sprintf("http://%s/swagger/doc.json", cfg.Address)),
+		httpSwagger.URL(fmt.Sprintf("http://%s/swagger/doc.json", cfg.Http.Address)),
 	))
 
+	// Server
 	srv := &http.Server{
-		Addr:         cfg.Address,
+		Addr:         cfg.Http.Address,
 		Handler:      r,
-		WriteTimeout: cfg.Timeout,
-		IdleTimeout:  cfg.IdleTimeout,
+		WriteTimeout: cfg.Http.Timeout,
+		IdleTimeout:  cfg.Http.IdleTimeout,
 	}
 
+	// Server shutdown
 	done := make(chan struct{})
 	sigterm := make(chan os.Signal, 1)
 	signal.Notify(sigterm, os.Interrupt, syscall.SIGTERM)
@@ -77,14 +98,14 @@ func main() {
 		<-sigterm
 		stlog.Info("shutting down the server")
 
-		ctx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
+		ctx, cancel := context.WithTimeout(context.Background(), cfg.Http.ShutdownTimeout)
 		defer cancel()
 		if err := srv.Shutdown(ctx); err != nil {
 			stlog.Error("failed to shutdown the server", slog.Any("error", err))
 		}
 	}()
 
-	stlog.Info("server is starting", slog.String("address", cfg.Address))
+	stlog.Info("server is starting", slog.String("address", cfg.Http.Address))
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		signal.Stop(sigterm)
 		stlog.Error("failed to start the server")
@@ -93,6 +114,16 @@ func main() {
 
 	<-done
 	stlog.Info("server has stopped")
+}
+
+func setupSentry(cfg *config.Config) (*sentryhttp.Handler, error) {
+	if err := sentry.Init(sentry.ClientOptions{
+		Dsn: cfg.SentryDSN,
+	}); err != nil {
+		return nil, err
+	}
+
+	return sentryhttp.New(sentryhttp.Options{Repanic: true}), nil
 }
 
 func setupLogger(env string) *slog.Logger {

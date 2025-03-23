@@ -32,6 +32,8 @@ func (s Storage) SaveURL(longURL, alias string) error {
 		return fmt.Errorf("prepare SaveURL: %w", err)
 	}
 
+	defer stmt.Close()
+
 	_, err = stmt.Exec(longURL, alias)
 	if err != nil {
 		var sqliteErr sqlite3.Error
@@ -50,6 +52,8 @@ func (s Storage) GetURL(alias string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("prepare GetURL: %w", err)
 	}
+
+	defer stmt.Close()
 
 	var longURL string
 

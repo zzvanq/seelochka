@@ -29,12 +29,12 @@ const docTemplate = `{
                 "summary": "Create an alias",
                 "parameters": [
                     {
-                        "description": "reqbody",
+                        "description": "Alias",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/urls.AliasRequest"
+                            "$ref": "#/definitions/save.AliasRequest"
                         }
                     }
                 ],
@@ -42,7 +42,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/urls.AliasResponse"
+                            "$ref": "#/definitions/save.AliasResponse"
                         }
                     },
                     "400": {
@@ -81,7 +81,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "urls.AliasRequest": {
+        "save.AliasRequest": {
             "description": "Alias data for creation",
             "type": "object",
             "required": [
@@ -89,32 +89,24 @@ const docTemplate = `{
             ],
             "properties": {
                 "alias": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 16,
+                    "minLength": 5
                 },
                 "url": {
                     "type": "string"
                 }
             }
         },
-        "urls.AliasResponse": {
+        "save.AliasResponse": {
             "description": "Response data for alias creation",
             "type": "object",
-            "required": [
-                "status"
-            ],
             "properties": {
                 "alias": {
                     "type": "string"
                 },
                 "error": {
                     "type": "string"
-                },
-                "status": {
-                    "type": "string",
-                    "enum": [
-                        "ok",
-                        "error"
-                    ]
                 }
             }
         }
