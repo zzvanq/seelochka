@@ -1,3 +1,3 @@
 db/sqlite.db
-configs/app.env
-main.out
+server
+.env

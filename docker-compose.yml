@@ -1,0 +1,19 @@
+services:
+  backend:
+    build:
+      context: .
+    container_name: seelochka
+    ports:
+      - ${PORT:?port not set}:8080
+    environment:
+      - CONFIG_PATH=${CONFIG_PATH?config_path not set}
+      - PORT=${PORT}
+      - SENTRY_DSN=${SENTRY_DSN}
+    deploy:
+      restart_policy:
+        condition: on-failure
+    volumes:
+      - db-data:/app/db/
+
+volumes:
+  db-data:

@@ -76,12 +76,11 @@ func main() {
 	})
 
 	r.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL(fmt.Sprintf("http://%s/swagger/doc.json", cfg.Http.Address)),
-	))
+		httpSwagger.URL(fmt.Sprintf("http://%s/swagger/doc.json", cfg.Http.Address))))
 
 	// Server
 	srv := &http.Server{
-		Addr:         cfg.Http.Address,
+		Addr:         cfg.Http.BindHost,
 		Handler:      r,
 		WriteTimeout: cfg.Http.Timeout,
 		IdleTimeout:  cfg.Http.IdleTimeout,
@@ -105,10 +104,10 @@ func main() {
 		}
 	}()
 
-	stlog.Info("server is starting", slog.String("address", cfg.Http.Address))
+	stlog.Info("server is starting", slog.String("address", cfg.Http.BindHost))
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		signal.Stop(sigterm)
-		stlog.Error("failed to start the server")
+		stlog.Error("failed to start the server", slog.Any("error", err))
 		return
 	}
 

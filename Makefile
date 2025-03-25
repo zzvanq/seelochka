@@ -1,15 +1,17 @@
 MAIN_PATH = cmd/seelochka/main.go
-CONFIG_PATH = configs/conf.yaml
-BINARY_NAME = main.out
+BINARY_NAME = server
 DB_PATH = db/sqlite.db
 MIGRATIONS_PATH = ./db/migrations/
 SWAGGER_DIRS = cmd/seelochka/,internal/http/handlers/url/save/,internal/http/handlers/url/redirect/
 
 build:
-	CONFIG_PATH=${CONFIG_PATH} go build -o ${BINARY_NAME} ${MAIN_PATH}
+	go build -o ${BINARY_NAME} ${MAIN_PATH}
 
 run:
-	CONFIG_PATH=${CONFIG_PATH} go run ${MAIN_PATH}
+	go run ${MAIN_PATH}
+
+run_release:
+	./server
 
 clean:
 	go clean

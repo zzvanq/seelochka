@@ -14,13 +14,13 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// @Description	Alias data for creation
+//	@Description	Alias data for creation
 type AliasRequest struct {
 	URL   string `json:"url" validate:"required,url"`
 	Alias string `json:"alias,omitempty" validate:"min=5,max=16"`
 }
 
-// @Description	Response data for alias creation
+//	@Description	Response data for alias creation
 type AliasResponse struct {
 	Alias string `json:"alias,omitempty"`
 	Error string `json:"error,omitempty"`
@@ -30,13 +30,13 @@ type URLSaver interface {
 	SaveURL(longURL, alias string) error
 }
 
-// @Summary	Create an alias
-// @Accept	json
-// @Produce	json
-// @Param		request	body		save.AliasRequest	true	"Alias"
-// @Success	200		{object}	save.AliasResponse
-// @Failure	400
-// @Router		/ [post]
+//	@Summary	Create an alias
+//	@Accept		json
+//	@Produce	json
+//	@Param		request	body		save.AliasRequest	true	"Alias"
+//	@Success	200		{object}	save.AliasResponse
+//	@Failure	400
+//	@Router		/ [post]
 func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		log = log.With(slog.String("handler", "urlSave"))
